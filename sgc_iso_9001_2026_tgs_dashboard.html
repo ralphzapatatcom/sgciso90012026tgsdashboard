@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full font-sans antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGC ISO 9001:2026 (TGS) - Dashboard de Gestión</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0a3651',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Graphics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row overflow-hidden transition-colors duration-200">
+
+    <!-- Mobile Top Navigation Header -->
+    <div class="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between z-20 shadow-md">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid me-2 fa-cubes-stacked text-sky-400 text-xl"></i>
+            <span class="font-bold text-lg tracking-wide">SGC ISO 9001:2026</span>
+        </div>
+        <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none p-1">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 bg-slate-900 text-slate-300 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out md:static md:z-auto shadow-xl">
+        <!-- Logo Header -->
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-sky-600/30">
+                    <i class="fa-solid fa-diagram-project"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base leading-tight">SGC TGS 2026</h1>
+                    <p class="text-xs text-sky-400 font-medium">ISO 9001 &amp; Sistémico</p>
+                </div>
+            </div>
+            <button id="closeMobileMenuBtn" class="md:hidden text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <div class="px-3 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Paneles del Sistema</div>
+            
+            <button onclick="switchTab('contexto')" id="nav-contexto" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-users-rectangle w-5 text-center text-sky-400"></i>
+                <span class="truncate">1. Contexto &amp; Partes</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">C01-C12</span>
+            </button>
+
+            <button onclick="switchTab('entradas')" id="nav-entradas" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-boxes-packing w-5 text-center text-amber-400"></i>
+                <span class="truncate">2. Entradas &amp; Recursos</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">E01-E12</span>
+            </button>
+
+            <button onclick="switchTab('procesos')" id="nav-procesos" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-gears w-5 text-center text-emerald-400"></i>
+                <span class="truncate">3. Procesos &amp; Subsistemas</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">P01-P12</span>
+            </button>
+
+            <button onclick="switchTab('salidas')" id="nav-salidas" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-trophy w-5 text-center text-purple-400"></i>
+                <span class="truncate">4. Salidas &amp; Valor</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">S01-S12</span>
+            </button>
+
+            <button onclick="switchTab('ciclo')" id="nav-ciclo" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-arrows-spin w-5 text-center text-indigo-400"></i>
+                <span class="truncate">5. Ciclo PHVA &amp; Feedback</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">R01-R12</span>
+            </button>
+
+            <button onclick="switchTab('riesgos')" id="nav-riesgos" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-shield-halved w-5 text-center text-rose-400"></i>
+                <span class="truncate">6. Riesgos &amp; Negentropía</span>
+                <span class="ml-auto bg-slate-800 text-xs px-2 py-0.5 rounded-full text-slate-400">G01-G12</span>
+            </button>
+        </nav>
+
+        <!-- Sidebar Footer / Controls -->
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">TGS 72 Inserts SQL</span>
+            <button id="themeToggle" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:inline"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- Top Toolbar Header -->
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm z-10">
+            <div>
+                <h2 id="panelTitle" class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <!-- Title injected dynamically -->
+                </h2>
+                <p id="panelSubtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <!-- Subtitle injected dynamically -->
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Search Bar -->
+                <div class="relative flex-1 md:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Buscar registro..." class="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <!-- Category Filter -->
+                <select id="categoryFilter" onchange="filterData()" class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <option value="ALL">Todos los tipos</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+            <!-- Dynamic KPI Cards Container -->
+            <div id="kpiContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- KPIs injected dynamically -->
+            </div>
+
+            <!-- Visualization Chart & Summary Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Data Table Panel -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table text-sky-500"></i> Tabla de Registros
+                        </h3>
+                        <span id="recordCounter" class="text-xs bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 font-semibold px-2.5 py-1 rounded-full">
+                            12 / 12 Registros
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto flex-1 max-h-[460px]">
+                        <table class="w-full text-sm text-left">
+                            <thead id="tableHead" class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-900/50 sticky top-0 border-b border-slate-200 dark:border-slate-700">
+                                <!-- Headers injected dynamically -->
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                <!-- Rows injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Interactive Chart Panel -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-chart-pie text-purple-500"></i> Distribución Sistémica
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Proporción de ítems por categoría clave.</p>
+                        <div class="relative h-64 w-full flex items-center justify-center">
+                            <canvas id="dashboardChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="chartSummary" class="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-xs text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800">
+                        <!-- Chart summary text -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Detail View Modal Slide-over -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg h-full shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out" id="modalPanel">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                <div class="flex items-center space-x-3">
+                    <span id="modalID" class="text-sm font-mono font-bold bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300 px-2.5 py-1 rounded-md">
+                        ID
+                    </span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Detalle de Registro</h3>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body Content -->
+            <div id="modalBody" class="p-6 overflow-y-auto flex-1 space-y-4">
+                <!-- Detail key-value pairs injected here -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-right">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-sm font-medium rounded-lg transition">
+                    Cerrar Detalle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Database Script JavaScript -->
+    <script>
+        // -------------------------------------------------------------
+        // COMPLETE SGC ISO 9001:2026 TGS DATASET (72 SQL RECORDS)
+        // -------------------------------------------------------------
+        const database = {
+            contexto: [
+                { id: 'C01', tipo: 'Económico', parte: 'Mercado Financiero', expectativa: 'Estabilidad en tipos de cambio y acceso a líneas de crédito.', alcance: 'Operaciones locales', fecha: '2026-01-15' },
+                { id: 'C02', tipo: 'Tecnológico', parte: 'Proveedores TI', expectativa: 'Adopción de IA y automatización segura en procesos clave.', alcance: 'Sistemas centralizados', fecha: '2026-01-20' },
+                { id: 'C03', tipo: 'Gobierno', parte: 'Ente Regulador', expectativa: 'Cumplimiento normativo ISO 9001:2026 y estatutos ambientales.', alcance: 'Ámbito legal nacional', fecha: '2026-02-02' },
+                { id: 'C04', tipo: 'Social', parte: 'Comunidad Local', expectativa: 'Impacto ambiental mínimo y creación de empleo transparente.', alcance: 'Entorno geográfico', fecha: '2026-02-10' },
+                { id: 'C05', tipo: 'Cliente', parte: 'Consumidores B2B', expectativa: 'Entrega puntual, cero defectos y soporte postventa eficiente.', alcance: 'Cadena de suministro', fecha: '2026-02-18' },
+                { id: 'C06', tipo: 'Interno', parte: 'Colaboradores', expectativa: 'Cultura de calidad, entorno seguro y equidad salarial.', alcance: 'Toda la plantilla', fecha: '2026-03-01' },
+                { id: 'C07', tipo: 'Dirección', parte: 'Accionistas', expectativa: 'Retorno de inversión (ROI) e innovación continua.', alcance: 'Estrategia corporativa', fecha: '2026-03-05' },
+                { id: 'C08', tipo: 'Competencia', parte: 'Sector Industrial', expectativa: 'Prácticas de competencia justa y benchmarks sectoriales.', alcance: 'Mercado objetivo', fecha: '2026-03-12' },
+                { id: 'C09', tipo: 'Proveedor', parte: 'Socios Logísticos', expectativa: 'Contratos claros, pagos a tiempo y previsión de demanda.', alcance: 'Cadena de valor', fecha: '2026-03-22' },
+                { id: 'C10', tipo: 'Cultura', parte: 'Sociedad Civil', expectativa: 'Comportamiento ético transparente y responsabilidad social.', alcance: 'Imagen corporativa', fecha: '2026-04-05' },
+                { id: 'C11', tipo: 'Sistemas', parte: 'Área de TI', expectativa: 'Infraestructura robusta con 99.9% de disponibilidad.', alcance: 'Red corporativa', fecha: '2026-04-12' },
+                { id: 'C12', tipo: 'Medio Ambiente', parte: 'ONGs Ambientales', expectativa: 'Reducción de huella de carbono en la transformación.', alcance: 'Procesos de planta', fecha: '2026-04-20' }
+            ],
+            entradas: [
+                { id: 'E01', tipo: 'Materias Primas', insumo: 'Resina plástica de alta densidad', requisito: 'Ficha técnica aprobada y certificado analítico', competencia: 'Grado pureza 99.5%', fecha: '2026-01-10' },
+                { id: 'E02', tipo: 'Personal', insumo: 'Ingeniero de Procesos Senior', requisito: 'Toma de conciencia en ética e ISO 9001:2026', competencia: '5+ años experiencia', fecha: '2026-01-18' },
+                { id: 'E03', tipo: 'Información', insumo: 'Planos y especificaciones cliente', requisito: 'Aprobados por el área técnica y cliente', competencia: 'Versión v3.2', fecha: '2026-02-05' },
+                { id: 'E04', tipo: 'Equipamiento', insumo: 'Maquinaria CNC de precisión', requisito: 'Calibración y mantenimiento preventivo al día', competencia: 'Tolerancia < 0.01mm', fecha: '2026-02-12' },
+                { id: 'E05', tipo: 'Software', insumo: 'ERP de Gestión de Inventario', requisito: 'Licencia activa y base de datos sincronizada', competencia: 'Operador certificado', fecha: '2026-02-25' },
+                { id: 'E06', tipo: 'Servicio', insumo: 'Suministro energía eléctrica', requisito: 'Tensión constante y respaldo de contingencia', competencia: 'Cero interrupciones', fecha: '2026-03-02' },
+                { id: 'E07', tipo: 'Material', insumo: 'Componentes electrónicos IC', requisito: 'Libres de defectos y trazabilidad de lote', competencia: 'Norma IPC-A-610', fecha: '2026-03-10' },
+                { id: 'E08', tipo: 'Documentación', insumo: 'Manual de Procedimientos', requisito: 'Publicado en repositorio oficial corporativo', competencia: 'Capacitación dada', fecha: '2026-03-15' },
+                { id: 'E09', tipo: 'Infraestructura', insumo: 'Área limpia (Cleanroom)', requisito: 'Control de partículas y humedad supervisado', competencia: 'ISO Clase 7', fecha: '2026-04-01' },
+                { id: 'E10', tipo: 'Metrología', insumo: 'Calibradores digitales vernier', requisito: 'Trazabilidad metrológica ISO 17025', competencia: 'Error ±0.002mm', fecha: '2026-04-08' },
+                { id: 'E11', tipo: 'Personal', insumo: 'Auditor Interno de Calidad', requisito: 'Conocimiento en TGS, procesos y ética', competencia: 'Certificado ISO', fecha: '2026-04-15' },
+                { id: 'E12', tipo: 'Financiero', insumo: 'Presupuesto de capacitación', requisito: 'Aprobado por Dirección para el ejercicio', competencia: 'Disponibilidad 100%', fecha: '2026-04-22' }
+            ],
+            procesos: [
+                { id: 'P01', nombre: 'Planificación Estratégica', subsistema: 'Dirección General', actividades: 'Definición de política, objetivos y asignación de recursos', cultura: 'Liderazgo y transparencia', fecha: '2026-01-02' },
+                { id: 'P02', nombre: 'Gestión Comercial', subsistema: 'Comercial / Ventas', actividades: 'Captación de requisitos, cotización y contratación', cultura: 'Honestidad en oferta', fecha: '2026-01-12' },
+                { id: 'P03', nombre: 'Diseño y Desarrollo', subsistema: 'Ingeniería / I+D', actividades: 'Modelado, prototipado y validación de productos', cultura: 'Protección propiedad int.', fecha: '2026-01-26' },
+                { id: 'P04', nombre: 'Evaluación Proveedores', subsistema: 'Compras / Abastecimiento', actividades: 'Selección, auditoría y homologación de insumos', cultura: 'Sin conflicto de interés', fecha: '2026-02-05' },
+                { id: 'P05', nombre: 'Fabricación y Ensamble', subsistema: 'Producción / Operaciones', actividades: 'Mecanizado, armado y empaque de productos', cultura: 'Inocuidad y responsabilidad', fecha: '2026-02-15' },
+                { id: 'P06', nombre: 'Control de Calidad', subsistema: 'Calidad y Aseguramiento', actividades: 'Inspección en proceso, liberación y pruebas', cultura: 'Rigor sin presión com.', fecha: '2026-02-20' },
+                { id: 'P07', nombre: 'Almacenamiento / Despacho', subsistema: 'Logística y Distribución', actividades: 'Gestión de stock, embalaje y envío seguro', cultura: 'Integridad de entregas', fecha: '2026-03-01' },
+                { id: 'P08', nombre: 'Gestión del Talento', subsistema: 'Recursos Humanos', actividades: 'Reclutamiento, formación y evaluación desempeño', cultura: 'Inclusión y respeto', fecha: '2026-03-10' },
+                { id: 'P09', nombre: 'Mantenimiento Planta', subsistema: 'Mantenimiento Técnico', actividades: 'Mantenimiento preventivo, correctivo y predictivo', cultura: 'Seguridad operativa', fecha: '2026-03-18' },
+                { id: 'P10', nombre: 'Infraestructura TI', subsistema: 'Sistemas / TI', actividades: 'Administración de redes, servidores y ciberseguridad', cultura: 'Confidencialidad digital', fecha: '2026-03-25' },
+                { id: 'P11', nombre: 'Gestión Financiera', subsistema: 'Finanzas / Contabilidad', actividades: 'Control presupuestario, facturación y auditorías', cultura: 'Rendición de cuentas', fecha: '2026-04-02' },
+                { id: 'P12', nombre: 'Atención al Cliente', subsistema: 'Postventa / Servicio', actividades: 'Soporte técnico, gestión de garantías y atención', cultura: 'Empatía y solución', fecha: '2026-04-10' }
+            ],
+            salidas: [
+                { id: 'S01', tipo: 'Producto Tangible', producto: 'Módulo industrial ensamblado Lote #402', valor: 'Durabilidad y menor consumo energético', metrica: 'Índice Aceptación > 99%', fecha: '2026-01-20' },
+                { id: 'S02', tipo: 'Servicio', producto: 'Soporte técnico preventivo en sitio', valor: 'Maximización del tiempo de actividad', metrica: 'Encuesta Post: 4.8/5', fecha: '2026-01-28' },
+                { id: 'S03', tipo: 'Información', producto: 'Reporte trazabilidad e inspección', valor: 'Transparencia total en normas', metrica: 'Cero observaciones', fecha: '2026-02-08' },
+                { id: 'S04', tipo: 'Producto Tangible', producto: 'Componente plástico de precisión', valor: 'Tolerancias exactas para engranaje', metrica: 'Rechazo <0.1%', fecha: '2026-02-18' },
+                { id: 'S05', tipo: 'Resultado', producto: 'Optimización de logística de despacho', valor: 'Reducción de tiempos de entrega un 25%', metrica: 'OTIF: 98%', fecha: '2026-03-02' },
+                { id: 'S06', tipo: 'Servicio', producto: 'Capacitación técnica al usuario', valor: 'Uso eficiente del equipo y menos averías', metrica: 'Evaluación: 95%', fecha: '2026-03-12' },
+                { id: 'S07', tipo: 'Información', producto: 'Certificado de Garantía 3 años', valor: 'Tranquilidad y respaldo para usuario', metrica: 'Fidelización +15%', fecha: '2026-03-20' },
+                { id: 'S08', tipo: 'Resultado', producto: 'Reducción de residuos de planta', valor: 'Sostenibilidad ambiental de insumos', metrica: 'Mermas al 1.2%', fecha: '2026-04-02' },
+                { id: 'S09', tipo: 'Producto Tangible', producto: 'Software embebido de control', valor: 'Automatización fluida sin fallos', metrica: 'Zero-bug despliegue', fecha: '2026-04-10' },
+                { id: 'S10', tipo: 'Servicio', producto: 'Atención de garantías remota', valor: 'Solución expedita en línea', metrica: 'Respuesta < 2 horas', fecha: '2026-04-18' },
+                { id: 'S11', tipo: 'Información', producto: 'Manual interactivo de usuario', valor: 'Facilidad de adopción y autogestión', metrica: 'Valoración positiva', fecha: '2026-04-25' },
+                { id: 'S12', tipo: 'Valor Social', producto: 'Informe de desempeño ético', valor: 'Reputación corporativa transparente', metrica: 'Aprobación comunidad', fecha: '2026-04-30' }
+            ],
+            ciclo: [
+                { id: 'R01', fase: 'Planificar', esperado: 'Plan auditoría interna 100%', obtenido: '80% auditorías ejecutadas en fecha', accion: 'Desviación tiempo / Reagenda', fecha: '2026-01-31' },
+                { id: 'R02', fase: 'Ejecutar', esperado: 'Cero defectos en línea ensamble A', obtenido: '2 unidades defectuosas / 1,000', accion: 'Ajuste calibración máquina', fecha: '2026-02-10' },
+                { id: 'R03', fase: 'Medir', esperado: 'Satisfacción cliente > 90%', obtenido: 'Satisfacción registrada de 94%', accion: 'Desviación pos. / Estandarizar', fecha: '2026-02-28' },
+                { id: 'R04', fase: 'Analizar', esperado: 'Sin cuellos de botella en compras', obtenido: 'Espera de insumos elevada 4 días', accion: 'Rediseño flujo aprobación', fecha: '2026-03-05' },
+                { id: 'R05', fase: 'Corregir', esperado: 'Eliminar fuga contenedor resina', obtenido: 'Fuga sellada y área limpia', accion: 'Acción de corrección directa', fecha: '2026-03-12' },
+                { id: 'R06', fase: 'Mejorar', esperado: 'Reducción consumo energía 5%', obtenido: 'Reducción alcanzada 7.2%', accion: 'Actualizar objetivo a 8%', fecha: '2026-03-25' },
+                { id: 'R07', fase: 'Planificar', esperado: 'Capacitar 100% personal nuevo', obtenido: '85% capacitado en primer mes', accion: 'Automatizar e-learning', fecha: '2026-04-02' },
+                { id: 'R08', fase: 'Ejecutar', esperado: 'Despacho OTIF al 95%', obtenido: 'Logrado 91% entregas interurbanas', accion: 'Ajuste de rutas logísticas', fecha: '2026-04-10' },
+                { id: 'R09', fase: 'Medir', esperado: 'Evaluación proveedores > 85', obtenido: 'Promedio obtenido 88 puntos', accion: 'Proceso bajo control', fecha: '2026-04-18' },
+                { id: 'R10', fase: 'Analizar', esperado: 'Análisis causa raíz en reclamo empaque', obtenido: 'Causa: Humedad almacén cajas', accion: 'Instalar deshumidificadores', fecha: '2026-04-22' },
+                { id: 'R11', fase: 'Corregir', esperado: 'Error en etiqueta exportación', obtenido: 'Relabeled inmediato en aduana', accion: 'Inclusión de escáner previo', fecha: '2026-04-28' },
+                { id: 'R12', fase: 'Mejorar', esperado: 'Digitalización registros inspección', obtenido: 'TransCrisis: Transición completada 100%', accion: 'Eliminación de papel', fecha: '2026-04-30' }
+            ],
+            riesgos: [
+                { id: 'G01', concepto: 'Homeostasis', riesgo: 'Desviación calidad por rotación personal', medida: 'Inducción estandarizada y mentores', clausula: '6.1.1 (Riesgos)', fecha: '2026-01-15' },
+                { id: 'G02', concepto: 'Negentropía', riesgo: 'Desorden y obsolescencia en procesos', medida: 'Revisión periódica y 5S digital', clausula: '10.3 (Mejora)', fecha: '2026-01-25' },
+                { id: 'G03', concepto: 'Entropía', riesgo: 'Deterioro paulatino de maquinaria', medida: 'Plan mantenimiento predictivo sensores', clausula: '6.1.2 (Acciones)', fecha: '2026-02-05' },
+                { id: 'G04', concepto: 'Equifinalidad', riesgo: 'Rigidez en métodos de entrega cliente', medida: 'Habilitación rutas despachos flexibles', clausula: '8.1 (Operación)', fecha: '2026-02-18' },
+                { id: 'G05', concepto: 'Sinergia', riesgo: 'Falta comunicación Compras/Producción', medida: 'Reuniones diarias interdepartamento', clausula: '4.4 (Procesos)', fecha: '2026-03-01' },
+                { id: 'G06', concepto: 'Sistematización', riesgo: 'Pérdida datos por fallos de red', medida: 'Respaldos automatizados nube', clausula: '7.5 (Información)', fecha: '2026-03-12' },
+                { id: 'G07', concepto: 'Homeostasis', riesgo: 'Variabilidad en temperatura inyección', medida: 'Termo-controladores circuito cerrado', clausula: '8.5.1 (Control)', fecha: '2026-03-22' },
+                { id: 'G08', concepto: 'Oportunidad', riesgo: 'Adopción IA inspección visual piezas', medida: 'Piloto visión artificial línea final', clausula: '6.1.3 (Oportunidades)', fecha: '2026-04-02' },
+                { id: 'G09', concepto: 'Negentropía', riesgo: 'Erosión de cultura ética y calidad', medida: 'Talleres trimestrales de conciencia', clausula: '5.1.1 (Liderazgo)', fecha: '2026-04-12' },
+                { id: 'G10', concepto: 'Adaptabilidad', riesgo: 'Cambios regulatorios ambientales', medida: 'Comité técnico vigilancia normativa', clausula: '4.1 (Contexto)', fecha: '2026-04-20' },
+                { id: 'G11', concepto: 'Entropía', riesgo: 'Acumulación productos no conformes', medida: 'Flujo disposición e informe mensual', clausula: '10.2 (No conformidad)', fecha: '2026-04-26' },
+                { id: 'G12', concepto: 'Holismo', riesgo: 'Optimización local perjudica al SGC', medida: 'KPIs alineados a objetivo global', clausula: '5.2 (Política Calidad)', fecha: '2026-04-30' }
+            ]
+        };
+
+        // Current Active Panel State
+        let currentTab = 'contexto';
+        let chartInstance = null;
+
+        // Theme Toggle Handler
+        const themeToggleBtn = document.getElementById('themeToggle');
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (chartInstance) renderChart(currentTab); // Re-render chart for dark/light themes
+        });
+
+        // Mobile Sidebar Navigation Handler
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenuBtn = document.getElementById('closeMobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+
+        mobileMenuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+        closeMobileMenuBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+        // Tab Switching Function
+        function switchTab(tabKey) {
+            currentTab = tabKey;
+
+            // Highlight Active Sidebar Button
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+            });
+            const activeNav = document.getElementById(`nav-${tabKey}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-300', 'hover:bg-slate-800');
+                activeNav.classList.add('bg-sky-600', 'text-white');
+            }
+
+            // Close Mobile Sidebar if Open
+            sidebar.classList.add('-translate-x-full');
+
+            // Reset search & filters
+            document.getElementById('searchInput').value = '';
+
+            // Populate Panel Data
+            loadPanelContent();
+        }
+
+        // Main Panel Renderer
+        function loadPanelContent() {
+            const data = database[currentTab];
+            const titleElem = document.getElementById('panelTitle');
+            const subTitleElem = document.getElementById('panelSubtitle');
+
+            // Set Title & Subtitle based on active module
+            switch(currentTab) {
+                case 'contexto':
+                    titleElem.innerHTML = `<i class="fa-solid fa-users-rectangle text-sky-500"></i> Contexto y Partes Interesadas`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 4 - Identificación de factores externos, internos y expectativas';
+                    break;
+                case 'entradas':
+                    titleElem.innerHTML = `<i class="fa-solid fa-boxes-packing text-amber-500"></i> Entradas y Recursos del Sistema`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 7 & 8 - Recursos materiales, talento, tecnología e infraestructura';
+                    break;
+                case 'procesos':
+                    titleElem.innerHTML = `<i class="fa-solid fa-gears text-emerald-500"></i> Procesos y Subsistemas`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 4, 5 & 8 - Cadena de valor, actividades clave y comportamiento ético';
+                    break;
+                case 'salidas':
+                    titleElem.innerHTML = `<i class="fa-solid fa-trophy text-purple-500"></i> Salidas y Valor Generado`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 8 & 9 - Entregables, productos, métricas y valor agregado';
+                    break;
+                case 'ciclo':
+                    titleElem.innerHTML = `<i class="fa-solid fa-arrows-spin text-indigo-500"></i> Ciclo Sistémico (PHVA) & Retroalimentación`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 9 & 10 - Planificar, Ejecutar, Medir, Analizar, Corregir y Mejorar';
+                    break;
+                case 'riesgos':
+                    titleElem.innerHTML = `<i class="fa-solid fa-shield-halved text-rose-500"></i> Riesgos, Oportunidades & Negentropía`;
+                    subTitleElem.innerText = 'ISO 9001:2026 Cap. 6 & Conceptos TGS - Homeostasis, sinergia, entropía y gestión preventiva';
+                    break;
+            }
+
+            // Populate Category Filter Options
+            populateCategoryFilter(data);
+
+            // Render Component UI
+            renderKPIs(data);
+            renderTable(data);
+            renderChart(currentTab);
+        }
+
+        // Fill Filter Dropdown
+        function populateCategoryFilter(data) {
+            const filterSelect = document.getElementById('categoryFilter');
+            filterSelect.innerHTML = '<option value="ALL">Todas las Categorías</option>';
+            
+            let categories = [];
+            if (currentTab === 'contexto') categories = [...new Set(data.map(i => i.tipo))];
+            if (currentTab === 'entradas') categories = [...new Set(data.map(i => i.tipo))];
+            if (currentTab === 'procesos') categories = [...new Set(data.map(i => i.subsistema))];
+            if (currentTab === 'salidas') categories = [...new Set(data.map(i => i.tipo))];
+            if (currentTab === 'ciclo') categories = [...new Set(data.map(i => i.fase))];
+            if (currentTab === 'riesgos') categories = [...new Set(data.map(i => i.concepto))];
+
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                filterSelect.appendChild(opt);
+            });
+        }
+
+        // Dynamic KPI Cards Generator
+        function renderKPIs(data) {
+            const container = document.getElementById('kpiContainer');
+            container.innerHTML = '';
+
+            let kpiList = [];
+
+            if (currentTab === 'contexto') {
+                const total = data.length;
+                const clientePartes = data.filter(d => d.tipo === 'Cliente' || d.tipo === 'Gobierno').length;
+                const recents = data.filter(d => d.fecha.startsWith('2026-04')).length;
+                kpiList = [
+                    { title: 'Total Partes Interesadas', value: total, icon: 'fa-users', color: 'sky' },
+                    { title: 'Requisitos Críticos', value: clientePartes, icon: 'fa-triangle-exclamation', color: 'amber' },
+                    { title: 'Revisiones Recientes (Abr)', value: recents, icon: 'fa-calendar-check', color: 'emerald' },
+                    { title: 'Alcance Cubierto', value: '100%', icon: 'fa-globe', color: 'purple' }
+                ];
+            } else if (currentTab === 'entradas') {
+                const personalCount = data.filter(d => d.tipo === 'Personal').length;
+                const techCount = data.filter(d => d.tipo === 'Software' || d.tipo === 'Equipamiento' || d.tipo === 'Metrología').length;
+                kpiList = [
+                    { title: 'Total Entradas Registradas', value: data.length, icon: 'fa-boxes-packing', color: 'amber' },
+                    { title: 'Recurso Humano Clave', value: personalCount, icon: 'fa-user-gear', color: 'sky' },
+                    { title: 'Tecnología e Infraestructura', value: techCount, icon: 'fa-microchip', color: 'indigo' },
+                    { title: 'Conformidad Criterios', value: '100%', icon: 'fa-circle-check', color: 'emerald' }
+                ];
+            } else if (currentTab === 'procesos') {
+                kpiList = [
+                    { title: 'Subsistemas Activos', value: data.length, icon: 'fa-diagram-project', color: 'emerald' },
+                    { title: 'Ámbitos Operativos', value: '12 Áreas', icon: 'fa-sitemap', color: 'sky' },
+                    { title: 'Compromiso Ético', value: 'Alto Rigor', icon: 'fa-scale-balanced', color: 'purple' },
+                    { title: 'Actualización ISO', value: '2026 Ready', icon: 'fa-award', color: 'amber' }
+                ];
+            } else if (currentTab === 'salidas') {
+                const tangibles = data.filter(d => d.tipo === 'Producto Tangible').length;
+                const servicios = data.filter(d => d.tipo === 'Servicio').length;
+                kpiList = [
+                    { title: 'Entregables de Valor', value: data.length, icon: 'fa-trophy', color: 'purple' },
+                    { title: 'Productos Tangibles', value: tangibles, icon: 'fa-box', color: 'emerald' },
+                    { title: 'Servicios Postventa', value: servicios, icon: 'fa-headset', color: 'sky' },
+                    { title: 'Nivel Satisfacción Prom.', value: '96.4%', icon: 'fa-face-smile', color: 'amber' }
+                ];
+            } else if (currentTab === 'ciclo') {
+                const planCount = data.filter(d => d.fase === 'Planificar' || d.fase === 'Ejecutar').length;
+                const mejoraCount = data.filter(d => d.fase === 'Mejorar' || d.fase === 'Corregir').length;
+                kpiList = [
+                    { title: 'Evaluaciones PHVA', value: data.length, icon: 'fa-arrows-spin', color: 'indigo' },
+                    { title: 'Fases Plan & Ejecución', value: planCount, icon: 'fa-list-check', color: 'sky' },
+                    { title: 'Acciones de Mejora', value: mejoraCount, icon: 'fa-arrow-trend-up', color: 'emerald' },
+                    { title: 'Tasa Desviaciones', value: 'Baja (2.1%)', icon: 'fa-chart-line', color: 'rose' }
+                ];
+            } else if (currentTab === 'riesgos') {
+                const homeostasis = data.filter(d => d.concepto === 'Homeostasis' || d.concepto === 'Negentropía').length;
+                kpiList = [
+                    { title: 'Controles TGS', value: data.length, icon: 'fa-shield-halved', color: 'rose' },
+                    { title: 'Equilibrio / Negentropía', value: homeostasis, icon: 'fa-atom', color: 'indigo' },
+                    { title: 'Cláusulas ISO Vinculadas', value: 'Cap 4,5,6,7,8,10', icon: 'fa-book-bookmark', color: 'sky' },
+                    { title: 'Efectividad Control', value: '98.5%', icon: 'fa-circle-check', color: 'emerald' }
+                ];
+            }
+
+            kpiList.forEach(kpi => {
+                const card = document.createElement('div');
+                card.className = `bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between`;
+                card.innerHTML = `
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">${kpi.title}</p>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mt-1">${kpi.value}</h4>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-${kpi.color}-100 dark:bg-${kpi.color}-900/40 text-${kpi.color}-600 dark:text-${kpi.color}-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid ${kpi.icon}"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Data Table Renderer
+        function renderTable(data) {
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+
+            tableHead.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            document.getElementById('recordCounter').innerText = `${data.length} / 12 Registros`;
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No se encontraron registros en esta categoría.</td></tr>`;
+                return;
+            }
+
+            let headers = [];
+            if (currentTab === 'contexto') headers = ['ID', 'Tipo Factor', 'Parte Interesada', 'Expectativa / Requisito', 'Límites Alcance', 'Fecha'];
+            if (currentTab === 'entradas') headers = ['ID', 'Tipo Recurso', 'Insumo / Elemento', 'Requisito Entrada', 'Competencia / Criterio', 'Fecha'];
+            if (currentTab === 'procesos') headers = ['ID', 'Nombre Proceso', 'Subsistema / Ámbito', 'Actividades Clave', 'Cultura & Ética', 'Fecha'];
+            if (currentTab === 'salidas') headers = ['ID', 'Tipo Salida', 'Producto / Servicio', 'Valor Agregado', 'Métrica Satisfacción', 'Fecha'];
+            if (currentTab === 'ciclo') headers = ['ID', 'Fase PHVA', 'Resultado Esperado', 'Resultado Obtenido', 'Desviación / Acción', 'Fecha'];
+            if (currentTab === 'riesgos') headers = ['ID', 'Concepto TGS', 'Riesgo / Oportunidad', 'Medida de Control', 'Cláusula ISO', 'Fecha'];
+
+            // Header Generation
+            let headTr = `<tr>`;
+            headers.forEach(h => { headTr += `<th class="px-4 py-3 font-semibold">${h}</th>`; });
+            headTr += `<th class="px-4 py-3 font-semibold text-right">Acción</th></tr>`;
+            tableHead.innerHTML = headTr;
+
+            // Row Generation
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition duration-150 border-b border-slate-100 dark:border-slate-700/50';
+
+                let badgeColor = 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300';
+
+                if (currentTab === 'contexto') {
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-sky-600 dark:text-sky-400">${item.id}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.tipo}</span></td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">${item.parte}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title="${item.expectativa}">${item.expectativa}</td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">${item.alcance}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                } else if (currentTab === 'entradas') {
+                    badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-amber-600 dark:text-amber-400">${item.id}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.tipo}</span></td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">${item.insumo}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title="${item.requisito}">${item.requisito}</td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">${item.competencia}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                } else if (currentTab === 'procesos') {
+                    badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">${item.id}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">${item.nombre}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.subsistema}</span></td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title="${item.actividades}">${item.actividades}</td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">${item.cultura}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                } else if (currentTab === 'salidas') {
+                    badgeColor = 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-purple-600 dark:text-purple-400">${item.id}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.tipo}</span></td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">${item.producto}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title="${item.valor}">${item.valor}</td>
+                        <td class="px-4 py-3 font-medium text-emerald-600 dark:text-emerald-400 text-xs">${item.metrica}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                } else if (currentTab === 'ciclo') {
+                    badgeColor = item.fase === 'Mejorar' || item.fase === 'Corregir' ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">${item.id}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.fase}</span></td>
+                        <td class="px-4 py-3 text-slate-700 dark:text-slate-300 max-w-xs truncate">${item.esperado}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">${item.obtenido}</td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs max-w-xs truncate">${item.accion}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                } else if (currentTab === 'riesgos') {
+                    badgeColor = 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-rose-600 dark:text-rose-400">${item.id}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">${item.concepto}</span></td>
+                        <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-200 max-w-xs truncate">${item.riesgo}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">${item.medida}</td>
+                        <td class="px-4 py-3 text-sky-600 dark:text-sky-400 font-mono text-xs">${item.clausula}</td>
+                        <td class="px-4 py-3 text-slate-400 text-xs">${item.fecha}</td>
+                    `;
+                }
+
+                // Action Column Button
+                tr.innerHTML += `
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="openModal('${item.id}')" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-600 px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300 transition">
+                            <i class="fa-solid fa-eye"></i> Detalle
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Filter and Search Functionality
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const data = database[currentTab];
+
+            const filtered = data.filter(item => {
+                // Category Filter Check
+                let catMatch = true;
+                if (category !== 'ALL') {
+                    if (currentTab === 'contexto') catMatch = item.tipo === category;
+                    if (currentTab === 'entradas') catMatch = item.tipo === category;
+                    if (currentTab === 'procesos') catMatch = item.subsistema === category;
+                    if (currentTab === 'salidas') catMatch = item.tipo === category;
+                    if (currentTab === 'ciclo') catMatch = item.fase === category;
+                    if (currentTab === 'riesgos') catMatch = item.concepto === category;
+                }
+
+                // Search Query Check across all values
+                const searchMatch = Object.values(item).some(val => 
+                    String(val).toLowerCase().includes(query)
+                );
+
+                return catMatch && searchMatch;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Interactive Chart Rendering (Chart.js)
+        function renderChart(tabKey) {
+            const ctx = document.getElementById('dashboardChart').getContext('2d');
+            const data = database[tabKey];
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#334155';
+
+            let counts = {};
+            let labelTitle = '';
+
+            if (tabKey === 'contexto') {
+                labelTitle = 'Tipos de Factores';
+                data.forEach(d => counts[d.tipo] = (counts[d.tipo] || 0) + 1);
+            } else if (tabKey === 'entradas') {
+                labelTitle = 'Tipos de Recursos';
+                data.forEach(d => counts[d.tipo] = (counts[d.tipo] || 0) + 1);
+            } else if (tabKey === 'procesos') {
+                labelTitle = 'Subsistemas de la Empresa';
+                data.forEach(d => counts[d.subsistema] = (counts[d.subsistema] || 0) + 1);
+            } else if (tabKey === 'salidas') {
+                labelTitle = 'Tipos de Entregables/Salidas';
+                data.forEach(d => counts[d.tipo] = (counts[d.tipo] || 0) + 1);
+            } else if (tabKey === 'ciclo') {
+                labelTitle = 'Fases del Ciclo PHVA';
+                data.forEach(d => counts[d.fase] = (counts[d.fase] || 0) + 1);
+            } else if (tabKey === 'riesgos') {
+                labelTitle = 'Conceptos Teoria Sistémica';
+                data.forEach(d => counts[d.concepto] = (counts[d.concepto] || 0) + 1);
+            }
+
+            const labels = Object.keys(counts);
+            const datasetValues = Object.values(counts);
+
+            // Destroy previous chart instance
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const chartColors = [
+                '#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', 
+                '#06b6d4', '#6366f1', '#84cc16', '#f97316', '#14b8a6'
+            ];
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: datasetValues,
+                        backgroundColor: chartColors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // Update Summary Note
+            document.getElementById('chartSummary').innerHTML = `
+                <strong>Resumen de ${labelTitle}:</strong> El módulo cuenta con <strong>${data.length} elementos</strong> divididos en <strong>${labels.length} categorías principales</strong> para el control sistémico ISO 9001:2026.
+            `;
+        }
+
+        // Modal View Open Handler
+        function openModal(id) {
+            const data = database[currentTab];
+            const record = data.find(r => r.id === id);
+
+            if (!record) return;
+
+            document.getElementById('modalID').innerText = record.id;
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = '';
+
+            // Mapping property labels
+            const labelsMap = {
+                id: 'Identificador Unico (ID)',
+                tipo: 'Tipo / Categoría',
+                parte: 'Parte Interesada',
+                expectativa: 'Expectativa / Requisito ISO',
+                alcance: 'Límites de Alcance',
+                insumo: 'Insumo o Elemento de Entrada',
+                requisito: 'Requisito de Entrada',
+                competencia: 'Criterio / Competencia Metrológica',
+                nombre: 'Nombre del Proceso',
+                subsistema: 'Subsistema / Ámbito de Aplicación',
+                actividades: 'Actividades Clave Desarrolladas',
+                cultura: 'Cultura y Comportamiento Ético',
+                producto: 'Producto, Servicio o Resultado',
+                valor: 'Valor Agregado Sistémico',
+                metrica: 'Métrica de Satisfacción / KPI',
+                fase: 'Fase PHVA',
+                esperado: 'Resultado Esperado (Plan/Meta)',
+                obtenido: 'Resultado Obtenido (Real)',
+                accion: 'Desviación o Acción Tomada',
+                concepto: 'Concepto Teoría General de Sistemas (TGS)',
+                riesgo: 'Riesgo u Oportunidad Detectada',
+                medida: 'Medida de Control Implementada',
+                clausula: 'Cláusula / Numeral ISO 9001:2026',
+                fecha: 'Fecha de Registro / Revisión'
+            };
+
+            Object.keys(record).forEach(key => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'border-b border-slate-100 dark:border-slate-700/50 pb-2';
+                itemDiv.innerHTML = `
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">${labelsMap[key] || key}</span>
+                    <p class="text-sm font-medium text-slate-800 dark:text-slate-100 mt-0.5">${record[key]}</p>
+                `;
+                modalBody.appendChild(itemDiv);
+            });
+
+            // Show Slide-Over Modal
+            const modal = document.getElementById('detailModal');
+            const panel = document.getElementById('modalPanel');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            panel.classList.remove('translate-x-full');
+        }
+
+        // Close Modal Handler
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            const panel = document.getElementById('modalPanel');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            panel.classList.add('translate-x-full');
+        }
+
+        // Keyboard Escape Key Listener for Modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Initialize App on DOM Load
+        window.onload = function () {
+            switchTab('contexto');
+        };
+    </script>
+</body>
+</html>
